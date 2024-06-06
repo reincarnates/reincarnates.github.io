@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>文字朗读</title>
+  <script src='https://unpkg.com/tesseract.js@v2.0.0-beta.1/dist/tesseract.min.js'></script>
   <style>
     * {
       margin: 0;
@@ -24,18 +25,36 @@
   </style>
 </head>
 <body>
+  <!-- <img src="https://reincarnation.oss-cn-beijing.aliyuncs.com/20240606090533.jpg" id="img" style="width: 400px; height: auto;" alt=""> -->
   <textarea name="文本" id="textarea" placeholder="请输入要朗读的内容"></textarea>
   <div>
     <button id="btn">点击朗读</button>
+    <input type="file" id="uploader">
   </div>
 
   <script>
+     async function start () {
+      try {
+        const img = document.getElementById('img')
+        // const content = document.getElementById('content')
+  
+        const { data: { text } } = await Tesseract.recognize(img, 'chi_sim', {
+          logger: m => console.log(m),
+        })
+        console.log(22, text)
+        // content.innerText = text
+      } catch (e) {
+        console.log(e)
+      }
+    }
+
     const btn = document.getElementById('btn')
     const textareaDom = document.getElementById("textarea")
     const synth = window.speechSynthesis // 启用文本
     const msg = new SpeechSynthesisUtterance()
     btn.onclick = () => {
-      play(textareaDom.value)
+      // play(textareaDom.value)
+      // start()
     }
     const play = (text) => {
       msg.text = text // 内容
@@ -44,6 +63,25 @@
       msg.rate = 1 // 语速：1
       msg.pitch = 1 // 音高：1
       synth.speak(msg) // 播放
+    }
+
+    // 获取文件上传输入框元素
+    let uploader = document.getElementById("uploader")
+    let file = ''
+    // 绑定change事件监听器
+    uploader.addEventListener("change", function (event) {
+      // 获取所选择的文件
+      file = event.target.files[0]
+      // 在这里可以执行你希望处理的操作，比如读取文件内容、上传文件等
+      recognize()
+    })
+    const recognize = async () => {
+      const { data: { text } } = await Tesseract.recognize(file, 'chi_sim', {
+        langPath: './chi_sim.traineddata.gz',
+        logger: m => console.log(m)
+      })
+      // content.innerText = text
+      console.log(text)
     }
   </script>
 </body>
